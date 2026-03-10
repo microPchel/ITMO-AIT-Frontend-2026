@@ -3,7 +3,7 @@ const events = [
 {
     id: 1,
     name: "Concert",
-    date: "21 Nov 2026",
+    date: "2026-11-21",
     city: "Paris",
     type: "Concert",
     description: "",
@@ -13,9 +13,9 @@ const events = [
 {
     id: 2,
     name: "Festival",
-    date: "5 Dec 2026",
+    date: "2026-12-05",
     city: "Berlin",
-    type: "Concert",
+    type: "Festival",
     description: "",
     image: ""
 },
@@ -23,7 +23,7 @@ const events = [
 {
     id: 3,
     name: "Theatre",
-    date: "14 Dec 2026",
+    date: "2026-12-14",
     city: "Milan",
     type: "Theatre",
     description: "",
@@ -47,10 +47,16 @@ function renderEvents() {
         container.innerHTML = "";
 
         const filteredEvents = events.filter(event => {
-            return (!type || event.type === type) &&
-                (!city || event.city.toLowerCase().includes(city)) &&
-                (!date || event.date === date);
+            const typeMatch = (type === "All" || !type) || event.type === type;
+            const cityMatch = !city || event.city.toLowerCase().includes(city);
+            const dateMatch = !date || event.date === date;
+            return typeMatch && cityMatch && dateMatch;
             });
+
+        if (filteredEvents.length === 0) {
+        container.innerHTML = `<p class="fw-bold">No matching events found</p>`;
+        return;
+    }
 
         filteredEvents.forEach((event) => {
             container.innerHTML += `
@@ -61,7 +67,7 @@ function renderEvents() {
             <div class="card-body">
             <h5 class="card-title">${event.name}</h5>
             <p class="card-text text-muted">
-            ${event.city} · ${event.date}
+            ${event.city} · ${new Date(event.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
             </p>
 
             <button class="btn btn-outline-primary me-2"
