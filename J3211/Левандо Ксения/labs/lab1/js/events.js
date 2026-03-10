@@ -8,7 +8,9 @@ const events = [
     type: "Concert",
     venue: "La Defense",
     description: "",
-    image: ""
+    image: "",
+    seatMap: "img/seatmap_concert.png",
+    organizer: "cool_company@gmail.com"
 },
 
 {
@@ -19,7 +21,8 @@ const events = [
     type: "Festival",
     venue: "Uber Arena",
     description: "",
-    image: ""
+    image: "",
+    seatMap: "img/seatmap_festival.png"
 },
 
 {
@@ -30,7 +33,8 @@ const events = [
     type: "Theatre",
     venue: "La Scala",
     description: "",
-    image: ""
+    image: "",
+    seatMap: "img/seatmap_theatre.png"
 }
 
 ];
