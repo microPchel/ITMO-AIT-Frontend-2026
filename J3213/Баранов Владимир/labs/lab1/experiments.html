@@ -37,6 +37,7 @@
                         <div class="navbar-nav ms-auto">
                             <a class="nav-link" href="index.html">Главная</a>
                             <a class="nav-link" href="dashboard.html">Личный кабинет</a>
+
                             <a class="nav-link" href="experiments.html">Эксперименты</a>
                             <a class="nav-link" href="models.html">Модели</a>
                             <a class="nav-link" href="login.html">Вход</a>
@@ -167,26 +168,26 @@
         </footer>
 
         <script>
-            var metricSelect = document.getElementById("metricFilter");
-            var tagInput = document.getElementById("tagFilter");
-            var applyButton = document.getElementById("applyFilters");
-            var resetButton = document.getElementById("resetFilters");
-            var table = document.getElementById("experimentsTable");
+            const metricSelect = document.getElementById("metricFilter");
+            const tagInput = document.getElementById("tagFilter");
+            const applyButton = document.getElementById("applyFilters");
+            const resetButton = document.getElementById("resetFilters");
+            const table = document.getElementById("experimentsTable");
 
-            if (applyButton && table) {
+            if (applyButton && table && metricSelect && tagInput) {
                 applyButton.addEventListener("click", function () {
-                    var metricValue = metricSelect.value;
-                    var tagValue = tagInput.value.toLowerCase();
+                    const metricValue = metricSelect.value;
+                    const tagValue = tagInput.value.toLowerCase();
 
-                    var rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+                    const rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr");
 
-                    for (var i = 0; i < rows.length; i++) {
-                        var cells = rows[i].getElementsByTagName("td");
-                        var nameText = cells[1].textContent || cells[1].innerText;
-                        var metricText = cells[3].textContent || cells[3].innerText;
-                        var rowText = (nameText + " " + metricText).toLowerCase();
+                    for (let i = 0; i < rows.length; i++) {
+                        const cells = rows[i].getElementsByTagName("td");
+                        const nameText = cells[1].textContent || cells[1].innerText;
+                        const metricText = cells[3].textContent || cells[3].innerText;
+                        const rowText = (nameText + " " + metricText).toLowerCase();
 
-                        var show = true;
+                        let show = true;
 
                         if (metricValue !== "Любая") {
                             if (metricText.indexOf(metricValue) === -1) {
@@ -209,14 +210,14 @@
                 });
             }
 
-            if (resetButton && table) {
+            if (resetButton && table && metricSelect && tagInput) {
                 resetButton.addEventListener("click", function () {
                     metricSelect.value = "Любая";
                     tagInput.value = "";
 
-                    var rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+                    const rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr");
 
-                    for (var i = 0; i < rows.length; i++) {
+                    for (let i = 0; i < rows.length; i++) {
                         rows[i].style.display = "";
                     }
                 });
