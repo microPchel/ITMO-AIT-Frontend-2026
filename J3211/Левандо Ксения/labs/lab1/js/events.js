@@ -1,80 +1,15 @@
-// create list of events by merging a list of default ones 
-// with ones created by organizers
-const defaultEvents = [
-
-{
-id: 1,
-name: "Bayern Munich vs Borussia Dortmund",
-type: "Sport",
-city: "Munich",
-venue: "Allianz Arena",
-date: "2026-10-12",
-image: "https://i.pinimg.com/736x/07/07/8a/07078a26e5fc3d7b03a5691fd527dc68.jpg",
-description: "Bundesliga top match at Allianz Arena.",
-organizer: "cool_company@gmail.com",
-seatmap: "assets/seatmap1.jpg",
-categories: [
-        { name: "VIP", price: 150 },
-        { name: "Premium", price: 100 },
-        { name: "Standard", price: 50 }
-    ]
-},
-
-{
-id: 2,
-name: "Italian Grand Prix",
-type: "Sport",
-city: "Monza",
-venue: "Autodromo Nazionale Monza",
-date: "2026-09-05",
-image: "https://i.pinimg.com/1200x/50/2c/b0/502cb0c1ff3c96ad1992fb289f9ae3c1.jpg",
-description: "High speed Formula 1 race at Monza circuit.",
-organizer: "cool_company@gmail.com",
-seatmap: "assets/seatmap2.jpg",
-categories: [
-        { name: "Grandstand", price: 120 },
-        { name: "Pit Lane", price: 200 }
-    ]
-},
-
-{
-id: 3,
-name: "Coldplay – Music of the Spheres Tour",
-type: "Concert",
-city: "Paris",
-venue: "Stade de France",
-date: "2026-07-18",
-image: "https://i.pinimg.com/1200x/b4/c8/d0/b4c8d0c9b1c458052281bb189708dabc.jpg",
-description: "Live stadium show with Coldplay.",
-organizer: "cool_company@gmail.com",
-seatmap: "assets/seatmap3.webp",
-categories: [
-        { name: "VIP", price: 250 },
-        { name: "Premium", price: 150 },
-        { name: "General", price: 80 }
-    ]
+let events = [];
+async function loadEvents() {
+    try {
+        const response = await fetch("http://localhost:3000/events");
+        events = await response.json();
+        renderEvents();
+    } catch (error) {
+        console.error("Error loading events:", error);
+    }
 }
 
-];
-
-// get from  localStorage
-let savedEvents = JSON.parse(localStorage.getItem("events")) || [];
-
-// using map to avoid duplicates
-const eventsMap = new Map();
-
-// default ones first
-defaultEvents.forEach(ev => eventsMap.set(ev.id, ev));
-
-// add created ones
-savedEvents.forEach(ev => eventsMap.set(ev.id, ev));
-
-// get joint array
-let events = Array.from(eventsMap.values());
-
-// this array back to local storage
-localStorage.setItem("events", JSON.stringify(events));
-
+loadEvents();
 document.getElementById("typeFilter").addEventListener("change", renderEvents);
 document.getElementById("cityFilter").addEventListener("input", renderEvents);
 document.getElementById("dateFilter").addEventListener("change", renderEvents);
@@ -117,10 +52,9 @@ function renderEvents() {
             ${new Date(event.date).toLocaleDateString()}
             </p>
 
-            <button class="btn btn-outline-primary me-2"
-            onclick="openEvent(${event.id})">
+            <a href="event.html?id=${event.id}" class="btn btn-outline-primary me-2">
             View
-            </button>
+            </a>
 
             </div>
             </div>
@@ -130,12 +64,3 @@ function renderEvents() {
 `;
         });
 }
-
-
-function openEvent(id) {
-    const event = events.find(e => e.id === id);
-    localStorage.setItem("selectedEvent", JSON.stringify(event));
-    window.location.href = "event.html";
-}
-
-renderEvents();

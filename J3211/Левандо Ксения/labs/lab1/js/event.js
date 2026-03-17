@@ -1,19 +1,44 @@
-const currentEvent = JSON.parse(localStorage.getItem("selectedEvent"));
+let currentEvent = null;
 
-document.getElementById("eventTitle").textContent = currentEvent.name;
-document.getElementById("eventImage").src = currentEvent.image;
-document.getElementById("eventDescription").textContent = currentEvent.description;
-document.getElementById("eventVenue").textContent = `Venue: ${currentEvent.venue}`;
-document.getElementById("seatMap").src = currentEvent.seatmap;
-document.getElementById("eventMeta").textContent =
-`${currentEvent.city} · ${new Date(currentEvent.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+const params = new URLSearchParams(window.location.search);
+const eventId = params.get("id");
 
-document.getElementById("buyBtn").onclick = () => {
-    buyTicket(currentEvent.name, currentEvent.date);
-};
+// get event from API
+async function loadEvent() {
+    try {
+        const response = await fetch(`http://localhost:3000/events/${eventId}`);
+        currentEvent = await response.json();
 
+        renderEvent();
+        loadReviews();
+
+    } catch (error) {
+        console.error("Error loading event:", error);
+    }
+}
+
+loadEvent();
+
+function renderEvent() {
+    document.getElementById("eventTitle").textContent = currentEvent.name;
+    document.getElementById("eventImage").src = currentEvent.image;
+    document.getElementById("eventDescription").textContent = currentEvent.description;
+    document.getElementById("eventVenue").textContent = `Venue: ${currentEvent.venue}`;
+    document.getElementById("seatMap").src = currentEvent.seatmap;
+    document.getElementById("eventMeta").textContent =
+    `${currentEvent.city} · ${new Date(currentEvent.date).toLocaleDateString('en-GB', 
+        { day: 'numeric', month: 'short', year: 'numeric' })}`;
+}
+
+// REVIEWS
 const reviewsContainer = document.getElementById("reviewsContainer");
-let reviews = JSON.parse(localStorage.getItem(`reviews_${currentEvent.id}`)) || [];
+let reviews = [];
+
+async function loadReviews() {
+    const response = await fetch(`http://localhost:3000/reviews?eventId=${eventId}`);
+    reviews = await response.json();
+    renderReviews();
+}
 
 function renderReviews() {
     reviewsContainer.innerHTML = "";
@@ -28,19 +53,29 @@ function renderReviews() {
         reviewsContainer.appendChild(div);
     });
 }
-renderReviews();
 
-document.getElementById("submitReview").onclick = () => {
+document.getElementById("submitReview").onclick = async () => {
     if (localStorage.getItem("organizerAuth") === "true") {
         return alert("Organizers cannot leave reviews.");
     }
     const text = document.getElementById("reviewInput").value.trim();
     if (!text) return alert("Enter review text");
-    const user = JSON.parse(localStorage.getItem("user")) || { email: "Guest" };
-    reviews.push({ user: user.email, text });
-    localStorage.setItem(`reviews_${currentEvent.id}`, JSON.stringify(reviews));
+    const user = JSON.parse(localStorage.getItem("user")) || { email: "Guest" };//?
+
+    await fetch("http://localhost:3000/reviews", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            eventId: Number(eventId),
+            user: user.email,
+            text: text
+        })
+    });
+
     document.getElementById("reviewInput").value = "";
-    renderReviews();
+    loadReviews();
 };
 
 // --- Buy ticket logic with categories ---
@@ -81,7 +116,7 @@ buyBtn.onclick = () => {
     modal.show();
 };
 
-confirmBuyBtn.onclick = () => {
+confirmBuyBtn.onclick = async () => {
     if (localStorage.getItem("auth") !== "true") {
         alert("Please login to buy tickets");
         window.location.href = "login.html";
@@ -89,20 +124,28 @@ confirmBuyBtn.onclick = () => {
     }
 
     const user = JSON.parse(localStorage.getItem("user"));
-    let tickets = JSON.parse(localStorage.getItem("tickets")) || [];
-
     const selectedCategory = currentEvent.categories[ticketCategory.value];
 
-    tickets.push({
-        eventId: currentEvent.id,
-        event: currentEvent.name,
-        date: currentEvent.date,
-        owner: user.email,
-        category: selectedCategory.name,
-        price: selectedCategory.price
-    });
+    await fetch("http://localhost:3000/tickets", {
 
-    localStorage.setItem("tickets", JSON.stringify(tickets));
+        method: "POST",
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+
+            eventId: Number(currentEvent.id),
+            event: currentEvent.name,
+            date: currentEvent.date,
+            owner: user.email,
+            category: selectedCategory.name,
+            price: selectedCategory.price
+
+        })
+
+    });
 
     alert(`Ticket purchased! Category: ${selectedCategory.name}, $${selectedCategory.price}`);
     bootstrap.Modal.getInstance(document.getElementById("buyTicketModal")).hide();
