@@ -8,16 +8,23 @@ const user = JSON.parse(localStorage.getItem("user"));
 document.getElementById("userName").textContent = user.name;
 document.getElementById("userEmail").textContent = user.email;
 
+// load tickets from API
+async function loadTickets() {
+    try {
+        const response = await fetch(`http://localhost:3000/tickets?owner=${user.email}`);
+        const userTickets = await response.json();
 
-// uploading tickets
-let tickets = JSON.parse(localStorage.getItem("tickets")) || [];
+        renderTickets(userTickets);
+    } catch (error) {
+        console.error("Error loading tickets:", error);
+    }
+}
 
 // create a ticket list on the page
-function renderTickets() {
+function renderTickets(tickets) {
     const container = document.getElementById("ticketsList");
 
-    const userTickets = tickets.filter(ticket => ticket.owner === user.email);
-    if (userTickets.length === 0) {
+    if (tickets.length === 0) {
         container.innerHTML = `
             <p class="text-muted">You haven't purchased any tickets yet.</p>
         `;
@@ -26,7 +33,7 @@ function renderTickets() {
 
     container.innerHTML = "";
 
-    userTickets.forEach((ticket, index) => {
+    tickets.forEach((ticket, index) => {
         container.innerHTML += `
             <div class="border rounded p-3 mb-2 d-flex justify-content-between align-items-center">
                 <div>
@@ -44,15 +51,26 @@ function renderTickets() {
 }
 
 // ticket refunding
-function refundTicket(index) {
-    tickets.splice(index, 1);
-    localStorage.setItem("tickets", JSON.stringify(tickets));
-    renderTickets();
+async function refundTicket(id) {
+    const confirmRefund = confirm("Are you sure you want to refund this ticket?");
+    if (!confirmRefund) return;
+
+    try {
+        await fetch(`http://localhost:3000/tickets/${id}`, {
+            method: "DELETE"
+        });
+
+        loadTickets(); // обновляем список
+    } catch (error) {
+        console.error("Refund error:", error);
+        alert("Failed to refund ticket");
+    }
 }
 
 function logout() {
     localStorage.removeItem("auth");
+    localStorage.removeItem("user");
     window.location.href = "index.html";
 }
 
-renderTickets();
+loadTickets();

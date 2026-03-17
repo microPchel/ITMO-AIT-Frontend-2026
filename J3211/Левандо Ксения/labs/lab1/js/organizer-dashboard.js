@@ -10,15 +10,23 @@ if (localStorage.getItem("organizerAuth") !== "true") {
 // get email of current organizator
 const organizerEmail = localStorage.getItem("organizerEmail");
 
-// get events from localStorage
-let events = JSON.parse(localStorage.getItem("events")) || [];
-
-// DOM
 const createForm = document.getElementById("createEventForm");
 const myEventsContainer = document.getElementById("myEventsContainer");
 const logoutBtn = document.getElementById("logoutBtn");
 
+let events = [];
 
+//load events from api
+
+async function loadEvents() {
+    const response = await fetch("http://localhost:3000/events");
+    events = await response.json();
+    renderMyEvents();
+}
+
+loadEvents();
+
+// render events
 function renderMyEvents() {
     myEventsContainer.innerHTML = "";
 
@@ -49,8 +57,34 @@ function renderMyEvents() {
     });
 }
 
+// adding categories to event tickets
+const categoriesContainer = document.getElementById("categoriesContainer");
+const addCategoryBtn = document.getElementById("addCategoryBtn");
+
+addCategoryBtn.onclick = () => {
+    const row = document.createElement("div");
+    row.className = "row g-2 mb-2 category-row";
+    row.innerHTML = `
+        <div class="col-md-5">
+            <input type="text" class="form-control category-name" placeholder="Category name">
+        </div>
+        <div class="col-md-5">
+            <input type="number" class="form-control category-price" placeholder="Price">
+        </div>
+        <div class="col-md-2">
+            <button type="button" class="btn btn-danger remove-category w-100">X</button>
+        </div>
+    `;
+    row.querySelector(".remove-category").onclick = () => row.remove();
+    categoriesContainer.appendChild(row);
+
+};
+
+// first category by default
+addCategoryBtn.click();
+
 // create new
-createForm.onsubmit = function(e) {
+createForm.onsubmit = async function(e) {
 
     e.preventDefault();
 
@@ -60,6 +94,8 @@ createForm.onsubmit = function(e) {
     const venue = document.getElementById("eventVenue").value.trim();
     const type = document.getElementById("eventType").value;
     const image = document.getElementById("eventImage").value.trim();
+    const description = document.getElementById("eventDescription").value.trim();
+    const seatmap = document.getElementById("eventSeatmap").value.trim();
 
     const cityPattern = /^[A-Za-z\s-]+$/;
 
@@ -82,6 +118,34 @@ createForm.onsubmit = function(e) {
     if (exists) {
             alert("You already created this event");
             return;}
+
+    // collect ticket categories
+
+    const categoryRows = document.querySelectorAll(".category-row");
+
+    const categories = [];
+
+    categoryRows.forEach(row => {
+
+        const name = row.querySelector(".category-name").value.trim();
+        const price = row.querySelector(".category-price").value;
+
+        if (name && price) {
+
+            categories.push({
+                name,
+                price: Number(price)
+            });
+
+        }
+
+    });
+
+    if (categories.length === 0) {
+        alert("Add at least one ticket category");
+        return;
+    }
+    
     const newEvent = {
         id: Date.now(),
         name,
@@ -89,42 +153,49 @@ createForm.onsubmit = function(e) {
         city,
         venue,
         type,
-        image: image,
+        image,
+        description,
+        seatmap,
+        categories,
         organizer: organizerEmail
     };
 
-
-    events.push(newEvent);
-
-    localStorage.setItem("events", JSON.stringify(events));
+    await fetch("http://localhost:3000/events", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(newEvent)
+    });
 
     createForm.reset();
 
-    renderMyEvents();
+    loadEvents();
 };
 
 
-function deleteEvent(id) {
+async function deleteEvent(id) {
     if (!confirm("Are you sure you want to delete this event?")) return;
-    events = events.filter(ev => ev.id !== id);
-    localStorage.setItem("events", JSON.stringify(events));
-    renderMyEvents();
+    await fetch(`http://localhost:3000/events/${id}`, {
+        method: "DELETE"
+    });
+    loadEvents();
 }
 
 
-function viewSales(eventId) {
-    const tickets = JSON.parse(localStorage.getItem("tickets")) || [];
-    const soldTickets = tickets.filter(t => {
-        const ev = events.find(e => e.name === t.event && e.id === eventId);
-        return ev && ev.organizer === organizerEmail;
-    });
+async function viewSales(eventId) {
+    const response = await fetch(`http://localhost:3000/tickets?eventId=${String(eventId)}`);
+    const soldTickets = await response.json();
 
     if (soldTickets.length === 0) {
         alert("No tickets sold yet for this event");
-    } else {
-        const seats = soldTickets.map(t => `${t.owner}${t.seat ? ` - Seat: ${t.seat}` : ""}`).join("\n");
-        alert(`Sold tickets:\n${seats}`);
+        return;
     }
+    const list = soldTickets
+        .map(t => `${t.owner} - ${t.category}`)
+        .join("\n");
+
+    alert(`Sold tickets:\n${list}`);
 }
 
 // Logout
@@ -133,6 +204,3 @@ logoutBtn.onclick = () => {
     localStorage.removeItem("organizerEmail");
     window.location.href = "organizer-login.html";
 };
-
-
-renderMyEvents();

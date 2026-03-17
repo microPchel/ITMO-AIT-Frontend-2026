@@ -58,4 +58,5 @@ function logoutOrganizer() {
     localStorage.removeItem("organizerAuth");
     localStorage.removeItem("organizerEmail");
     location.reload();
+    window.location.href = "login.html";
 }
