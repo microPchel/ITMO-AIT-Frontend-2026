@@ -42,7 +42,7 @@ function renderMyEvents() {
         col.className = "col-md-4";
         col.innerHTML = `
         <div class="card h-100 shadow-sm">
-            <img src="${ev.image}" class="card-img-top">
+            <img src="${ev.image}" class="card-img-top" alt="${ev.name} picture">
             <div class="card-body">
                 <h5 class="card-title">${ev.name}</h5>
                 <p class="text-muted">${ev.city} · ${new Date(ev.date).toLocaleDateString()}</p>
@@ -227,13 +227,6 @@ async function viewSales(eventId) {
         "info"
     );
 }
-
-// Logout
-logoutBtn.onclick = () => {
-    localStorage.removeItem("organizerAuth");
-    localStorage.removeItem("organizerEmail");
-    window.location.href = "organizer-login.html";
-};
 
 // --- Modal function (reuse from event page)
 function showModal(title, message, type = "primary") {
