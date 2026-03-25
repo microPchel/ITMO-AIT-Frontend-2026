@@ -36,10 +36,12 @@ function renderEvents() {
     }
 
         filteredEvents.forEach((event) => {
+            // create alt-text from event info
+            const imageAlt = `${event.name} at ${event.venue}, ${event.city} - ${event.type} event poster`
             container.innerHTML += `
             <div class="col-md-4">
             <div class="card h-100 shadow-sm">
-            <img src="${event.image}" class="card-img-top">
+            <img src="${event.image}" class="card-img-top" alt="${imageAlt}" loading="lazy">
             <div class="card-body">
             <span class="badge bg-secondary mb-2">${event.type}</span>
             <h5 class="card-title">${event.name}</h5>
