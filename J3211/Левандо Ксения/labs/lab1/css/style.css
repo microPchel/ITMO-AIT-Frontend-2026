@@ -1,0 +1,29 @@
+body {
+	margin: 0;
+}
+
+.site-footer {
+  background-color: #f0f0f0;
+  padding: 20px;
+  font-size: 14px;
+  color: #333;
+}
+.bg-dark {
+    background-color: #07132f !important;
+}
+
+.btn-warning {
+    background-color: #ff7a00;
+    border-color: #ff7a00;
+}
+
+.carousel-img{
+    object-fit: cover;
+    filter: brightness(50%)
+}
+
+.carousel-caption {
+    background: rgba(0,0,0,0.45);
+    padding: 20px;
+    border-radius: 10px;
+}
