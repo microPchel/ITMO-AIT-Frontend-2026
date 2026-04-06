@@ -1,9 +1,9 @@
-import { users } from './data_parol.js';
+import { getJSON, saveCurrentUser } from './api.js';
 
 const emailInputEnter = document.querySelector('#floatingInput');
 const passwordInputEnter = document.querySelector('#floatingPassword');
 const entBtn = document.querySelector('#enter');
-
+const loginForm = document.querySelector('#loginForm');
 
 const toastElement = document.getElementById('errorToast');
 const toastText = document.getElementById('errorToastText');
@@ -14,36 +14,42 @@ function showToast(message) {
     errorToast.show();
 }
 
-function checkLoginEnter() {
-    const queryEmail = emailInputEnter.value;
-    const queryPassword = passwordInputEnter.value;
-    if (emailInputEnter.value === '' || passwordInputEnter.value === '') {
+function clearInputs() {
+    emailInputEnter.value = '';
+    passwordInputEnter.value = '';
+}
+
+async function checkLoginEnter() {
+    const queryEmail = emailInputEnter.value.trim();
+    const queryPassword = passwordInputEnter.value.trim();
+
+    if (queryEmail === '' || queryPassword === '') {
         showToast('Пустые значения');
-        emailInputEnter.value = '';
-        passwordInputEnter.value = '';
+        clearInputs();
         return;
     }
-    else if (checkData(queryEmail, queryPassword)) {
+
+    try {
+        const users = await getJSON('/users', {
+            email: queryEmail,
+            password: queryPassword
+        });
+
+        if (!users.length) {
+            showToast('Неверный логин или пароль');
+            clearInputs();
+            return;
+        }
+
+        saveCurrentUser(users[0]);
         window.location.href = 'main.html';
-    } else {
-        showToast('Неверный логин или пароль');
-        emailInputEnter.value = '';
-        passwordInputEnter.value = '';
-        return;
+    } catch (error) {
+        console.error(error);
+        showToast('Не удалось подключиться к API');
     }
 }
 
-entBtn.addEventListener('click', checkLoginEnter);
-
-function checkData(email, password) {
-    const raw = localStorage.getItem('users');
-    const localUsers = JSON.parse(raw) || [];
-    const allUsers = [...users, ...localUsers];
-
-    const user = allUsers.find(user => user.email === email);
-
-    if (user && user.password === password) {
-        return true;
-    }
-    return false;
-}
+loginForm.addEventListener('submit', function (event) {
+    event.preventDefault();
+    checkLoginEnter();
+});

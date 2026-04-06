@@ -1,27 +1,23 @@
-const APPLICATIONS_STORAGE_KEY = 'taskApplications';
+import { getJSON, getCurrentUser } from './api.js';
+
 const taskCardData = document.querySelector('#card-container');
+const currentUser = getCurrentUser();
 
-function getSavedApplications() {
-    const savedApplications = localStorage.getItem(APPLICATIONS_STORAGE_KEY);
+taskCardData.innerHTML = `
+    <div class="alert alert-secondary w-100" role="status">
+        Загрузка заявок...
+    </div>
+`;
+taskCardData.setAttribute('aria-busy', 'true');
 
-    if (!savedApplications) {
-        return [];
-    }
-
-    try {
-        return JSON.parse(savedApplications);
-    } catch (error) {
-        console.error('Не удалось прочитать заявки из localStorage', error);
-        return [];
-    }
+if (!currentUser) {
+    window.location.href = 'enter.html';
 }
 
-function renderAccountCards() {
-    const applications = getSavedApplications();
-
+function renderAccountCards(applications) {
     if (!applications.length) {
         taskCardData.innerHTML = `
-            <div class="alert alert-secondary w-100" role="alert">
+            <div class="alert alert-secondary w-100" role="status">
                 Вы пока ни на одну должность не записались.
             </div>
         `;
@@ -29,17 +25,33 @@ function renderAccountCards() {
     }
 
     taskCardData.innerHTML = applications.map(application => `
-        <div class="card" style="width: 20rem;">
-            <img src="${application.image}" class="card-img-top" alt="${application.taskTitle}">
+        <article class="card application-card" style="width: 20rem;">
+            <img src="${application.image}" class="card-img-top" alt="Иллюстрация к задаче: ${application.taskTitle}">
             <div class="card-body">
-                <h5 class="card-title">${application.taskTitle}</h5>
+                <h2 class="h5 card-title">${application.taskTitle}</h2>
                 <p class="mb-2"><strong>Роль:</strong> ${application.roleLabel}</p>
-                <p class="mb-1"><strong>Статус Задачи:</strong> ${application.status}</p>
+                <p class="mb-1"><strong>Статус задачи:</strong> ${application.status}</p>
                 <p class="mb-1"><strong>Приоритет:</strong> ${application.priority}</p>
                 <p class="mb-0"><strong>Постановщик:</strong> ${application.createdBy}</p>
             </div>
-        </div>
+        </article>
     `).join('');
 }
 
-renderAccountCards();
+async function bootstrapAccountPage() {
+    try {
+        const applications = await getJSON('/applications', { userEmail: currentUser.email });
+        renderAccountCards(applications);
+    } catch (error) {
+        console.error(error);
+        taskCardData.innerHTML = `
+            <div class="alert alert-danger w-100" role="alert">
+                Не удалось загрузить заявки с JSON Server.
+            </div>
+        `;
+    } finally {
+        taskCardData.setAttribute('aria-busy', 'false');
+    }
+}
+
+bootstrapAccountPage();

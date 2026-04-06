@@ -1,4 +1,4 @@
-import { users as defaultUsers } from './data_parol.js';
+import { getJSON, postJSON, saveCurrentUser } from './api.js';
 
 const emailInputRegister = document.querySelector('#floatingInputRegister');
 const passwordInputRegister = document.querySelector('#floatingPasswordRegister');
@@ -6,6 +6,8 @@ const passwordInputRepeatRegister = document.querySelector('#floatingPasswordRep
 const nameInput = document.querySelector('#floatingName');
 const surnameInput = document.querySelector('#floatingSurname');
 const entBtnReg = document.querySelector('#enterRegister');
+const registerForm = document.querySelector('#registerForm');
+
 const toastElement = document.getElementById('errorToast');
 const toastText = document.getElementById('errorToastText');
 const errorToast = new bootstrap.Toast(toastElement);
@@ -15,57 +17,7 @@ function showToast(message) {
     errorToast.show();
 }
 
-function checkLoginInBase() {
-    const queryEmail = emailInputRegister.value;
-    const raw = localStorage.getItem('users');
-    const localUsers = JSON.parse(raw) || [];
-    const allUsers = [...defaultUsers, ...localUsers];
-
-    if (
-        emailInputRegister.value === '' ||
-        passwordInputRegister.value === '' ||
-        passwordInputRepeatRegister.value === '' ||
-        nameInput.value === '' ||
-        surnameInput.value === ''
-    ) {
-        showToast('Пустые значения');
-        emailInputRegister.value = '';
-        passwordInputRegister.value = '';
-        passwordInputRepeatRegister.value = '';
-        nameInput.value = '';
-        surnameInput.value = '';
-        return;
-    }
-    else if (CheckDataBase(allUsers, queryEmail)) {
-        showToast('Уже есть такой пользователь');
-        emailInputRegister.value = '';
-        passwordInputRegister.value = '';
-        passwordInputRepeatRegister.value = '';
-        nameInput.value = '';
-        surnameInput.value = '';
-        return;
-    }
-    else if (passwordInputRegister.value != passwordInputRepeatRegister.value) {
-        showToast('Пароли не совпадают');
-        emailInputRegister.value = '';
-        passwordInputRegister.value = '';
-        passwordInputRepeatRegister.value = '';
-        nameInput.value = '';
-        surnameInput.value = '';
-        return;
-    }
-
-    const newUser = {
-        name: nameInput.value,
-        surname: surnameInput.value,
-        email: emailInputRegister.value,
-        password: passwordInputRegister.value
-    };
-
-    localUsers.push(newUser);
-    localStorage.setItem("users", JSON.stringify(localUsers));
-    window.location.href = 'main.html';
-
+function clearInputs() {
     emailInputRegister.value = '';
     passwordInputRegister.value = '';
     passwordInputRepeatRegister.value = '';
@@ -73,11 +25,56 @@ function checkLoginInBase() {
     surnameInput.value = '';
 }
 
-entBtnReg.addEventListener('click', checkLoginInBase);
+async function checkLoginInBase() {
+    const queryEmail = emailInputRegister.value.trim();
+    const queryPassword = passwordInputRegister.value.trim();
+    const repeatPassword = passwordInputRepeatRegister.value.trim();
+    const queryName = nameInput.value.trim();
+    const querySurname = surnameInput.value.trim();
 
-function CheckDataBase(usersArray, email) {
-    if (usersArray.find(user => user.email === email)) {
-        return true;
+    if (
+        queryEmail === '' ||
+        queryPassword === '' ||
+        repeatPassword === '' ||
+        queryName === '' ||
+        querySurname === ''
+    ) {
+        showToast('Пустые значения');
+        clearInputs();
+        return;
     }
-    return false;
+
+    if (queryPassword !== repeatPassword) {
+        showToast('Пароли не совпадают');
+        clearInputs();
+        return;
+    }
+
+    try {
+        const existingUsers = await getJSON('/users', { email: queryEmail });
+
+        if (existingUsers.length) {
+            showToast('Уже есть такой пользователь');
+            clearInputs();
+            return;
+        }
+
+        const newUser = await postJSON('/users', {
+            name: queryName,
+            surname: querySurname,
+            email: queryEmail,
+            password: queryPassword
+        });
+
+        saveCurrentUser(newUser);
+        window.location.href = 'main.html';
+    } catch (error) {
+        console.error(error);
+        showToast('Не удалось подключиться к API');
+    }
 }
+
+registerForm.addEventListener('submit', function (event) {
+    event.preventDefault();
+    checkLoginInBase();
+});
