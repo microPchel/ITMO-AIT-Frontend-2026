@@ -224,7 +224,7 @@
 
 Задание: улучшить доступность ранее реализованного сайта. Добавить необходимые HTML-атрибуты ко всему контенту на странице и проверить это с помощью инструментов из Dev Tools браузера Firefox и сервиса Google Lighthouse.
 
-Дедлайн: 
+Дедлайн: 06.04.26
 
 ### Язык CSS: работа с CSS-переменными
 ### Язык CSS: темизация сайта через CSS-переменные
@@ -244,7 +244,7 @@ https://www.youtube.com/watch?v=8LFbS78a4Rw
 
 Пример, который разбирали на лекции: https://github.com/kantegory/mentoring/tree/master/08_themization_example
 
-Дедлайн: 
+Дедлайн: 06.04.26
 
 ### Для чего нужен SVG-спрайт? Создание собственного SVG-спрайта
 
@@ -258,7 +258,7 @@ https://www.youtube.com/watch?v=8LFbS78a4Rw
 
 Задание: вынести все используемые ранее SVG-иконки в общий SVG-спрайт. Если иконок не было, добавьте 3-5 иконок и поместите их в SVG-спрайт.
 
-Дедлайн: 
+Дедлайн: 06.04.26
 
 ### Кроссбраузерные картинки (тег picture)
 
@@ -274,11 +274,12 @@ https://www.youtube.com/watch?v=8LFbS78a4Rw
 
 ### Фреймворк Vue.JS: основы, работа с менеджером зависимостей npm
 
-Презентация: https://disk.yandex.ru/i/CtrJOV1w5biiMw
+Презентация: https://disk.yandex.ru/i/CtrJOV1w5biiMw  
+Пример, который делали на лекции: https://github.com/kantegory/mentoring/tree/master/33_vue_notes_example
 
 ### Домашняя работа 5: изучение основ работы с менеджером зависимостей npm
 
-Дедлайн: 
+Дедлайн: 20.04.26
 
 В рамках данной работы Вам предстоит изучить основные команды пакетного менеджера NPM и научиться стартовать проект на Vue.
 Научиться работать с npm и vue на основе мануала: https://docs.google.com/document/d/187UkgGNrcWqkb2aCGpkHTLgeozoElMqdVgVGMBOC9gk/edit?usp=sharing.
